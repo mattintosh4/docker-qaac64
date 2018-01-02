@@ -21,7 +21,7 @@ extract_itunes(){
 ${iTunes_SHA1} *iTunes64Setup.exe
 !
     do
-        ((++i < 10)) || exit 2
+        ((i++ < 3)) || exit 2
         curl -L -o iTunes64Setup.exe "${iTunes_URL}"
     done
 
