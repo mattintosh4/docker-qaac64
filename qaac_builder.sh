@@ -12,9 +12,9 @@ extract_qaac(){
     7z e -y -oqaac ${qaac_zipfile} "*/x64/*.*"
 }
 
-extract_itunes(){(
-    iTunes64Setup_exe_url=${1:?}
-    iTunes64Setup_exe_sha1=${2:?}
+extract_itunes(){( : ${1:?} ${2:?}
+    test -f "${1:?}" && read iTunes64Setup_exe_url < ${1:?}
+    test -f "${2:?}" && iTunes64Setup_exe_sha1=${2:?}
 
     i=0
     while ! sha1sum --check "${iTunes64Setup_exe_sha1}"
