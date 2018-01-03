@@ -34,7 +34,8 @@ ${iTunes_SHA1} *iTunes64Setup.exe
         libdispatch \
         libicuin \
         libicuuc \
-        objc
+        objc \
+        pthreadVC2
     do
         7z e -so AppleApplicationSupport64.msi "x64_AppleApplicationSupport_${f}.dll" >qaac/${f}.dll
     done
