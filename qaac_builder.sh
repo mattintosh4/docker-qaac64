@@ -3,9 +3,6 @@
  set -u
  set -x
 
-iTunes_URL=https://secure-appldnld.apple.com/itunes12/091-56359-20171213-EDF2198A-E039-11E7-9A9F-D21A1E4B8CED/iTunes64Setup.exe
-iTunes_SHA1=0ac4641beb6c4fd0cbb8348ddeb6d741375b75ea
-
 extract_qaac(){
     set -- `curl https://api.github.com/repos/nu774/qaac/releases/latest | jq -r ".assets[].name, .assets[].browser_download_url"`
     qaac_version=${1%.*}
@@ -15,32 +12,39 @@ extract_qaac(){
     7z e -y -oqaac ${qaac_zipfile} "*/x64/*.*"
 }
 
-extract_itunes(){
+extract_itunes(){(
+    iTunes64Setup_exe_url=${1:?}
+    iTunes64Setup_exe_sha1=${2:?}
+
     i=0
-    while ! sha1sum --check <<!
-${iTunes_SHA1} *iTunes64Setup.exe
-!
+    while ! sha1sum --check "${iTunes64Setup_exe_sha1}"
     do
         ((i++ < 3)) || exit 2
-        curl -L -o iTunes64Setup.exe "${iTunes_URL}"
+        curl -L -o iTunes64Setup.exe "${iTunes64Setup_exe_url}"
     done
 
     7z e -y iTunes64Setup.exe AppleApplicationSupport64.msi
     for f in \
-        ASL \
-        CoreAudioToolbox \
-        CoreFoundation \
-        icudt55 \
-        libdispatch \
-        libicuin \
-        libicuuc \
-        objc \
-        pthreadVC2
+    ASL.dll \
+    CoreAudioToolbox.dll \
+    CoreFoundation.dll \
+    icudt??.dll \
+    libdispatch.dll \
+    libicuin.dll \
+    libicuuc.dll \
+    objc.dll \
+    pthreadVC2.dll
     do
-        7z e -so AppleApplicationSupport64.msi "x64_AppleApplicationSupport_${f}.dll" >qaac/${f}.dll
+        case ${f} in
+        icudt*.dll)
+            f=$(7z l -slt AppleApplicationSupport64.msi | awk '$3 ~ /icudt[0-9][0-9]\.dll/ { gsub("^.*_", "", $3); print $3 }')
+            test -n "${f}" || exit 2
+        ;;
+        esac
+        7z e -so AppleApplicationSupport64.msi x64_AppleApplicationSupport_${f} >qaac/${f}
     done
     rm AppleApplicationSupport64.msi
-}
+)}
 
 which curl sha1sum 7z jq >/dev/null
 
@@ -48,6 +52,6 @@ test ! -d qaac || rm -r qaac
 mkdir qaac
 
 extract_qaac
-extract_itunes
+extract_itunes iTunes64Setup.exe.url iTunes64Setup.exe.sha1
 
 chmod 0644 qaac/*.*
