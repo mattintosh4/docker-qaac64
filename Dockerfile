@@ -1,5 +1,5 @@
 FROM ubuntu:xenial
-MAINTAINER Makoto Yoshida <mattintosh4@gmail.com>
+LABEL maintainer "Makoto Yoshida <mattintosh4@gmail.com>"
 
 RUN sed -E -i 's!(archive|security).ubuntu.com/ubuntu!ftp.jaist.jp/pub/Linux/ubuntu!' /etc/apt/sources.list \
 &&  echo 'APT::Install-Recommends "false";' >>/etc/apt/apt.conf.d/local
